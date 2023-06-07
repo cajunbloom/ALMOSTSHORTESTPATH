@@ -1,0 +1,363 @@
+import java.util.*;
+
+public class Main {
+
+    static class Graph {
+        private int V; // number of vertices
+        private HashMap<Integer, List<Edge>> adjMap; // adjacency map
+        // constructor
+        Graph(int v) {
+            V = v;
+            adjMap = new HashMap<>();
+            for (int i = 0; i < v; i++) {
+                adjMap.put(i, new LinkedList<Edge>());
+            }
+        }
+
+        List<Edge> getV(int curr) {
+            return adjMap.get(curr);
+        }
+        int getSize() {
+
+            return V;
+        }
+
+        // method to add a directed edge with weight to the graph
+        void addEdge(int from, int to, int weight) {
+            adjMap.get(from).add(new Edge(to, weight));
+        }
+        // method to remove a directed edge from the graph
+        void removeEdge(int from, int to) {
+            List<Edge> adjList = adjMap.get(from);
+            for (int i = 0; i < adjList.size(); i++) {
+                if (adjList.get(i).to == to) {
+                    adjList.remove(i);
+                    break;
+                }
+            }
+        }
+        // method to print the graph
+        void printGraph() {
+            for (int i = 0; i < V; i++) {
+                //System.out.print("Vertex " + i + " is connected to: ");
+                List<Edge> adjList = adjMap.get(i);
+                for (int j = 0; j < adjList.size(); j++) {
+                    Edge e = adjList.get(j);
+                    // System.out.print(e.to + " (weight: " + e.weight + ") ");
+                }
+
+            }
+        }
+        // inner class to represent an edge
+
+        class Edge {
+            int to;
+            int weight;
+
+            Edge(int to, int weight) {
+                this.to = to;
+                this.weight = weight;
+            }
+        }
+
+    }
+
+
+
+
+
+    static void findAllShortestPaths(Graph graph, int source, int dest) {
+        boolean[] visited = new boolean[graph.getSize()];
+        Arrays.fill(visited, false);
+
+        // initialize distances and previous nodes
+        int[] dist = new int[graph.getSize()];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[source] = 0;
+        List<Integer>[] prev = new List[graph.getSize()];
+        // perform Dijkstra's algorithm to find shortest distances and previous nodes
+        pq<Integer> myPq = new pq<Integer>();
+        myPq.StartHeap(graph.getSize());
+        for (int i = 0; i < graph.getSize(); i++) {
+            prev[i] = new LinkedList<>();
+            myPq.Insert(i, dist[i]);
+            prev[i].clear();
+        }
+
+        while (!myPq.isEmpty()) {
+            int curr = myPq.ExtractMin();
+            visited[curr] = true;
+            List<Graph.Edge> adjList = graph.getV(curr);
+
+            for (Graph.Edge e : adjList) {
+                int next = e.to;
+                int weight = e.weight;
+                if (visited[next] == false) {
+                    if (dist[curr] + weight < dist[next]) {
+                        dist[next] = dist[curr] + weight;
+                        prev[next].clear(); // clear previous nodes
+                        prev[next].add(curr); // add curr as a new previous node
+                        myPq.ChangeKey(next, dist[curr] + weight);
+                    } else if (dist[curr] + weight == dist[next]) {
+                        dist[next] = dist[curr] + weight;
+                        prev[next].add(curr); // add curr as another previous node with same distance
+                    }
+                }
+            }
+        }
+        deleteShortestPathEdges(graph, prev, source, dest);
+    }
+    static void deleteShortestPathEdges(Graph graph, List<Integer>[] prev, int source, int dest) {
+
+        // BFS to remove all edges on the shortest path
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(dest);
+
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+            while(!prev[curr].isEmpty()) {
+                int next = prev[curr].remove(0);
+                graph.removeEdge(next, curr);
+                queue.add(next);
+            }
+
+        }
+    }
+    static int findShortestPath(Graph graph, int source, int dest) {
+        boolean[] visited = new boolean[graph.getSize()];
+        Arrays.fill(visited, false);
+
+        // initialize distances and previous nodes
+        int[] dist = new int[graph.getSize()];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[source] = 0;
+
+        // perform Dijkstra's algorithm to find shortest distances and previous nodes
+        pq<Integer> myPq = new pq<Integer>();
+        myPq.StartHeap(graph.getSize());
+        for (int i = 0; i < graph.getSize(); i++) {
+            myPq.Insert(i, dist[i]);
+        }
+
+        while (!myPq.isEmpty()) {
+            int curr = myPq.ExtractMin();
+            visited[curr] = true;
+            List<Graph.Edge> adjList = graph.getV(curr);
+
+            for (Graph.Edge e : adjList) {
+                int next = e.to;
+                int weight = e.weight;
+                if (visited[next] == false) {
+                    if (dist[curr] + weight < dist[next]) {
+                        dist[next] = dist[curr] + weight;
+                        myPq.ChangeKey(next, dist[curr] + weight);
+                    } else if (dist[curr] + weight == dist[next]) {
+                        dist[next] = dist[curr] + weight;
+                    }
+                }
+            }
+        }
+        int val = -1;
+        if (dist[dest] != Integer.MAX_VALUE && dist[dest] > 0) {
+            val = dist[dest];
+        }
+        return val;
+    }
+
+    public static void main(String[] args) {
+
+        try (Scanner input = new Scanner(System.in)) {
+            while (input.hasNextLine()) {
+
+                String line = input.nextLine();
+                if (line.equals("0 0")) break;
+                String[] NM = line.split(" ");
+                //n vert m edges
+                int N = Integer.parseInt(NM[0]);
+                int M = Integer.parseInt(NM[1]);
+
+                line = input.nextLine();
+                String[] SD = line.split(" ");
+                //source destination d when delete searches
+                int S = Integer.parseInt(SD[0]);
+                int D = Integer.parseInt(SD[1]);
+
+                Graph graph = new Graph(N);
+
+                //adding edges m amount of times
+                for (int i = 0; i < M; i++) {
+                    line = input.nextLine();
+                    String[] UVP = line.split(" ");
+                    int U = Integer.parseInt(UVP[0]);
+                    int V = Integer.parseInt(UVP[1]);
+                    int P = Integer.parseInt(UVP[2]);
+                    graph.addEdge(U, V, P);
+                }
+
+
+                findAllShortestPaths(graph, S, D);
+
+                System.out.println(findShortestPath(graph, S, D));
+
+
+
+            }
+        }
+    }
+}
+
+class pq<T> {
+    private HeapNode<T>[] heapArray;
+    public int size;
+    private HashMap<T, Integer> position;
+
+    public void StartHeap(int N) {
+        // create an array with the given capacity
+        //n+1 so that we start at index 1
+        heapArray = new HeapNode[N + 1];
+        size = 0;
+
+        //creating dictionary
+        position = new HashMap<>();
+
+
+
+    }
+
+    // Returns the parent index of the element at the given index
+    private int parent(int index) {
+        return (index) / 2;
+    }
+
+    // Returns the left child index of the element at the given index
+    private int leftChild(int index) {
+        return 2 * index;
+    }
+
+    // Returns the right child index of the element at the given index
+    private int rightChild(int index) {
+        return 2 * index + 1;
+    }
+
+    // Swaps two elements in the heapArray and updates their positions in the map
+    private void swap(int i, int j) {
+        T item1 = heapArray[i].item;
+        T item2 = heapArray[j].item;
+        HeapNode<T> temp = heapArray[i];
+        heapArray[i] = heapArray[j];
+        heapArray[j] = temp;
+        position.replace(item1, j);
+        position.replace(item2, i);
+
+    }
+
+    public T FindMin() {
+
+        return heapArray[1].item;
+    }
+
+    public T ExtractMin() {
+        T whatever = FindMin();
+        delete(1);
+        return whatever;
+    }
+
+    public void ChangeKey(T item, int newValue) {
+        if (!position.containsKey(item)) {
+            return;
+        }
+
+        int index = position.get(item);
+        heapArray[index].value = newValue;
+
+        if (index > 1 && (heapArray[index].value < heapArray[parent(index)].value)) {
+            Heapify_Up(index);
+        } else {
+            Heapify_Down(index);
+        }
+    }
+
+
+
+    private void Heapify_Up(int index) {
+
+        while (index != 1 && (heapArray[index].value) < (heapArray[parent(index)].value)) {
+            swap(index, parent(index));
+            index = parent(index);
+        }
+
+
+    }
+
+    // Maintains the min heap property by sinking down the element at the given index
+    private void Heapify_Down(int index) {
+
+        while (leftChild(index) <= size) {
+            int smallestChild = leftChild(index);
+            if (rightChild(index) <= size && heapArray[rightChild(index)].value < heapArray[smallestChild].value) {
+                smallestChild = rightChild(index);
+            }
+            if (heapArray[index].value <= heapArray[smallestChild].value) {
+                break;
+            }
+            swap(index, smallestChild);
+            index = smallestChild;
+        }
+    }
+
+    // Adds an element to the heap
+    public void Insert(T item, int value) {
+
+        HeapNode<T> temp = new HeapNode<>(item, value);
+
+        heapArray[size + 1] = temp;
+        position.put(item, size + 1);
+
+        Heapify_Up(size + 1);
+        size++;
+
+
+    }
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    //node class
+    private class HeapNode<E> {
+        E item;
+        int value;
+
+        public HeapNode(E item, int value) {
+            this.item = item;
+            this.value = value;
+        }
+
+    }
+
+
+    private void delete(int index) {
+        // remove the node at the given index by swapping it with the last node
+        swap(index, size);
+        position.remove(heapArray[size].item);
+        heapArray[size] = null;
+        size--;
+
+        // fix the heap by bubbling down the node that replaced the removed one
+        Heapify_Down(index);
+
+    }
+
+    public void delete(T item) {
+        if (!position.containsKey(item)) {
+            return; // item not found in the heap
+        }
+
+        int index = position.get(item);
+        delete(index);
+
+
+    }
+
+}
+
+
