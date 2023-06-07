@@ -19,7 +19,7 @@ For each test case, print in one line the greatest possible value that can be ob
 
 <h2>Languages Used</h2>
 
-- <b>Java</b> 
+- <b>Python</b> 
 
 <h2>Program walk-through:</h2>
 The overall framework to solve the problem:
