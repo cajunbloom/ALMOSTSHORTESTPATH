@@ -29,10 +29,42 @@ Remove the subgraph via BFS algorithm.
 Dijkstra’s Algorithm again.
 
 <p align="center">
-TEST CODE INPUT AND EXPECTED OUTPUT<br/>
-<img src="https://imgur.com/a/l3p21xO" height="80%" width="80%" alt="Running Test Case"/>
+TEST CODE INPUT:
+7  9
+0 6
+0 1 1
+0 2 1
+0 3 2
+0 4 3
+1 5 2
+2 6 4
+3 6 2
+4 6 4
+5 6 1
+4 6
+0 2
+0 1 1
+1 2 1
+1 3 1
+3 2 1
+2 0 3
+3 0 2
+6 8
+0 1
+0 1 1
+0 2 2
+0 3 3
+2 5 3
+3 4 2
+4 1 1
+5 1 1
+3 0 1
+0 0
+EXPECTED OUTPUT:
+ 5
+-1
+6
 
-<br />
 
 <!--
  ```diff
